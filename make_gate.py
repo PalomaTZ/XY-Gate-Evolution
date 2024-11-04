@@ -2,7 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import qutip as qt
 
-args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':90, 't_0': 500, 'alpha':-0.2, 'gate':'x'}
+# parameters for each pulse
+args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':90, 't_0': 360, 'alpha':-0.2, 'gate':'Y', 'q':4}
+# When constructing the functions for the pulses in gauss_wave and gauss_deriv, this dictionary
+# stores the coeff depending on the gate, determined by the 'gate' in args dictionery
+gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
 
 def create_diagonal(q, w, w_d, a):
   if q<2:
@@ -23,41 +27,25 @@ def create_off_terms(q):
   Y1 =-1.0j*sm1+1.0j*sm1.dag()
   return X1, Y1
 
+ex = gate_coeff[args['gate']][0]
+ey = gate_coeff[args['gate']][1]
+
 def gauss_wave(t, args):
-  return 0.5*args['A']*np.exp(-0.5*((t-args['t_0'])/args['sigma'])**2)
+  return ex*0.5*args['A']*np.exp(-0.5*((t-args['t_0'])/args['sigma'])**2)
 
 def gauss_deriv(t, args):
-  return -0.5*(args['b']*args['A']/(args['sigma']**2))*(t-args['t_0'])*np.exp(-0.5*((t-args['t_0'])/args['sigma'])**2)
+  return -ey*0.5*(args['b']*args['A']/(args['sigma']**2))*(t-args['t_0'])*np.exp(-0.5*((t-args['t_0'])/args['sigma'])**2)
 
-# def make_hamiltonian(H1, X1, Y1, args):
-#   ex = 0
-#   ey = 0
-#   if args['gate'] == 'X':
-#     ex = gauss_wave
-#     ey = gauss_deriv
-#   elif args['gate'] == 'x':
-#     ex = 0.5*gauss_wave
-#     ey = 0.5*gauss_deriv
-#   elif args['gate'] == 'Y':
-#     ex = -1*gauss_deriv
-#     ey = gauss_wave
-#   elif args['gate'] == 'y':
-#     ex = -0.5*gauss_deriv
-#     ey = 0.5*gauss_wave
-#   return qt.QobjEvo([H1, [X1, ex], [Y1, ey]], args=args)
-
-q = 4
+# Range over which the pulse will propogate
 time_range = np.linspace(0,2000,300)
 
-X1, Y1 = create_off_terms(q)
+X1, Y1 = create_off_terms(args['q'])
 
-H1 = create_diagonal(q, args['W'], args['W_d'], args['alpha'])
-
-#H = make_hamiltonian(H1, X1, Y1, args)
+H1 = create_diagonal(args['q'], args['W'], args['W_d'], args['alpha'])
 
 H = qt.QobjEvo([H1, [X1, gauss_wave], [Y1, gauss_deriv]], args=args)
 
-qpsi0=qt.basis(q,0)
+qpsi0=qt.basis(args['q'],0)
 kappa = (0.0025**0.5)*args['A']
 
 def make_collapse_ops(q):
@@ -72,11 +60,11 @@ def make_collapse_ops(q):
   #matrix.append(qt.Qobj(kappa*np.diag(phase_loss)))
   return matrix
 
-c_ops = make_collapse_ops(q)
-P0=qt.basis(q,0)*qt.basis(q,0).dag()
-P1=qt.basis(q,1)*qt.basis(q,1).dag()
-P2=qt.basis(q,2)*qt.basis(q,1).dag()
-P3=qt.basis(q,3)*qt.basis(q,1).dag()
+c_ops = make_collapse_ops(args['q'])
+P0=qt.basis(args['q'],0)*qt.basis(args['q'],0).dag()
+P1=qt.basis(args['q'],1)*qt.basis(args['q'],1).dag()
+P2=qt.basis(args['q'],2)*qt.basis(args['q'],1).dag()
+P3=qt.basis(args['q'],3)*qt.basis(args['q'],1).dag()
 
 result = qt.mesolve(H, qpsi0, time_range, c_ops)
 
