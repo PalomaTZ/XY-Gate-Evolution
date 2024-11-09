@@ -4,7 +4,7 @@ import qutip as qt
 from scipy.optimize import minimize
 
 # parameters for each pulse
-args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':90, 't_0': 360, 'alpha':0.2, 'gate':'Y', 'q':4}# When constructing the functions for the pulses in gauss_wave and gauss_deriv, this dictionary
+args = {'W':4.5, 'W_d':4.5, 'A':0.4, 'b':0.4, 'sigma':90, 't_0': 360, 'alpha':-0.2, 'gate':'x', 'q':4}# When constructing the functions for the pulses in gauss_wave and gauss_deriv, this dictionary
 # stores the coeff depending on the gate, determined by the 'gate' in args dictionery
 gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
 
@@ -69,14 +69,16 @@ P1=qt.basis(args['q'],1)*qt.basis(args['q'],1).dag()
 P2=qt.basis(args['q'],2)*qt.basis(args['q'],2).dag()
 P3=qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()
 
-result = qt.mesolve(H, qpsi0, time_range, c_ops)
+expectation = [P0, P1, P2, P3]
+
+result = qt.mesolve(H, qpsi0, time_range, c_ops, expectation)
 
 fig, ax = plt.subplots()
 
-m = [np.absolute((i*P0).tr())**2 for i in result.states]
-n = [np.absolute((i*P1).tr())**2 for i in result.states]
-l = [np.absolute((i*P2).tr())**2 for i in result.states]
-p = [np.absolute((i*P3).tr())**2 for i in result.states]
+# m = [i.expect[0] for i in result.states]
+# n = [i.expect[1] for i in result.states]
+# l = [i.expect[2] for i in result.states]
+# p = [i.expect[3] for i in result.states]
 
 # params = [args['A'], args['sigma']]
 
@@ -89,10 +91,10 @@ p = [np.absolute((i*P3).tr())**2 for i in result.states]
 # res = minimize(minimize_func, x0=[0.07,130])
 # print(res.x[0],res.x[1])
 
-ax.plot(time_range, m, label = 'ground state')
-ax.plot(time_range, n, label = '1st excited')
-ax.plot(time_range, l, label = '2nd excited')
-ax.plot(time_range, p, label = '3rd excited')
+ax.plot(time_range, result.expect[0], label = 'ground state')
+ax.plot(time_range, result.expect[1], label = '1st excited')
+ax.plot(time_range, result.expect[2], label = '2nd excited')
+ax.plot(time_range, result.expect[3], label = '3rd excited')
 
 ax.legend()
 

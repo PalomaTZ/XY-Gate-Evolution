@@ -17,8 +17,8 @@ params = [args['A'], args['sigma']]
 def minimize_func(x):
     args['A'] = x[0]
     args['sigma'] = x[1]
-    obj = gate_class.GateEvo(time_range, args).make_result().states[-1]
-    return 1-np.absolute((obj*P1).tr())**2
+    obj = gate_class.GateEvo(time_range, args).make_result().expect[1][-1]
+    return 1-obj
 
 res = minimize(minimize_func, x0=[0.07,130])
 print(res.x[0],res.x[1])
