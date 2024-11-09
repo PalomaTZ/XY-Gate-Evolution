@@ -23,6 +23,10 @@ class GateEvo:
         self.ey = gate_coeff[args['gate']][1]
         self.kappa = (0.0025**0.5)*args['A']
         self.qpsi0 = qt.basis(args['q'],0)
+        self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
+                        qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
+                        qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
+                        qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()]
     
     def create_diagonal(self):
         if self.q<2:
@@ -66,7 +70,7 @@ class GateEvo:
         H1 = self.create_diagonal()
         H = qt.QobjEvo([H1, [X1, self.gauss_wave], [Y1, self.gauss_deriv]], args=self.args)
         c_ops = self.make_collapse_ops()
-        return qt.mesolve(H, self.qpsi0, self.time_range, c_ops)
+        return qt.mesolve(H, self.qpsi0, self.time_range, c_ops, self.pmatrices)
 
     def final_value(self):
         result = self.make_result()
