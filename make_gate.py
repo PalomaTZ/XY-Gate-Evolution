@@ -7,6 +7,8 @@ from scipy.optimize import minimize
 args = {'W':4.5, 'W_d':4.5, 'A':0.4, 'b':0.4, 'sigma':90, 't_0': 360, 'alpha':-0.2, 'gate':'x', 'q':4}# When constructing the functions for the pulses in gauss_wave and gauss_deriv, this dictionary
 # stores the coeff depending on the gate, determined by the 'gate' in args dictionery
 gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
+#options for mesolve
+options = {"store_final_state":True}
 
 def create_diagonal(q, w, w_d, a):
   if q<2:
@@ -71,7 +73,9 @@ P3=qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()
 
 expectation = [P0, P1, P2, P3]
 
-result = qt.mesolve(H, qpsi0, time_range, c_ops, expectation)
+result = qt.mesolve(H, qpsi0, time_range, c_ops, expectation, options=options)
+
+print(result.final_state)
 
 fig, ax = plt.subplots()
 
