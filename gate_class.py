@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import qutip as qt
 
+options = {"store_final_state":True}
+
 gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
 
 class GateEvo:
-    def __init__(self, time_range, args):
+    def __init__(self, time_range, qpsi0, args):
         self.args = args
         self.time_range = time_range
         self.W = args['W']
@@ -22,7 +24,7 @@ class GateEvo:
         self.ex = gate_coeff[args['gate']][0]
         self.ey = gate_coeff[args['gate']][1]
         self.kappa = (0.0025**0.5)*args['A']
-        self.qpsi0 = qt.basis(args['q'],0)
+        self.qpsi0 = qpsi0
         self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
                         qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
                         qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
@@ -70,8 +72,8 @@ class GateEvo:
         H1 = self.create_diagonal()
         H = qt.QobjEvo([H1, [X1, self.gauss_wave], [Y1, self.gauss_deriv]], args=self.args)
         c_ops = self.make_collapse_ops()
-        return qt.mesolve(H, self.qpsi0, self.time_range, c_ops, self.pmatrices)
+        return qt.mesolve(H, self.qpsi0, self.time_range, c_ops, self.pmatrices, options=options)
 
     def final_value(self):
-        result = self.make_result()
+        result = self.make_result().states
         return result[-1]
