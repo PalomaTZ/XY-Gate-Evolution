@@ -4,7 +4,7 @@ import qutip as qt
 from scipy.optimize import minimize
 import gate_class
 
-args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':130, 't_0': 400, 'alpha':0.2, 'gate':'x', 'q':4}
+args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':130, 't_0': 390, 'alpha':0.2, 'gate':'x', 'q':4}
 time_range = np.linspace(0,2*args['t_0'],200)
 qpsi0 = qt.basis(args['q'],0)
 
