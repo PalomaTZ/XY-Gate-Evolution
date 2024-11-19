@@ -7,7 +7,7 @@ options = {"store_final_state":True}
 gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
 
 class GateEvo:
-    def __init__(self, time_range, qpsi0, args):
+    def __init__(self, time_range, qpsi0, gate_list, args):
         self.args = args
         self.time_range = time_range
         self.W = args['W']
@@ -15,16 +15,13 @@ class GateEvo:
         self.A = args['A']
         self.b = args['b']
         self.sigma = args['sigma']
-        self.t_0 = args['t_0']
+        self.t_0 = 3*args['sigma']
         self.alpha = args['alpha']
-        self.gate = args['gate']
         self.q = args['q']
-        # gate_coeff can probably be brought outside the class
-        #self.gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
-        self.ex = gate_coeff[args['gate']][0]
-        self.ey = gate_coeff[args['gate']][1]
+        self.gate_list = gate_list
         self.kappa = (0.0025**0.5)*args['A']
         self.qpsi0 = qpsi0
+        self.num_gates = 10
         self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
                         qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
                         qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
@@ -48,12 +45,28 @@ class GateEvo:
         X1 = sm1+sm1.dag()
         Y1 =-1.0j*sm1+1.0j*sm1.dag()
         return X1, Y1
+    
+    def ex(self, gate):
+        return gate_coeff[gate][0]
+
+    def ey(self, gate):
+        return gate_coeff[gate][1]
 
     def gauss_wave(self, t):
-        return self.ex*0.5*self.A*np.exp(-0.5*((t-self.t_0)/self.sigma)**2)
+        func = 0
+        t_0 = self.t_0
+        for i in self.gate_list:
+            func += self.ex(i)*0.5*self.A*np.exp(-0.5*((t-t_0)/self.sigma)**2)
+            t_0 += 2*self.t_0
+        return func
 
     def gauss_deriv(self, t):
-        return -self.ey*0.5*(self.b*self.A/(self.sigma**2))*(t-self.t_0)*np.exp(-0.5*((t-self.t_0)/self.sigma)**2)
+        func = 0
+        t_0 = self.t_0
+        for i in self.gate_list:
+            func += -self.ey(i)*0.5*(self.b*self.A/(self.sigma**2))*(t-t_0)*np.exp(-0.5*((t-t_0)/self.sigma)**2)
+            t_0 += 2*self.t_0
+        return func
 
     def make_collapse_ops(self):
         x = np.sqrt(np.arange(1,self.q))
