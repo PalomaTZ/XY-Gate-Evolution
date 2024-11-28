@@ -7,7 +7,7 @@ import gate_class
 def const(x):
     return x[0]
 
-gate_list = ['X', 'X', 'X', 'X', 'X']
+gate_list = ['X']*3
 args = {'W':4.5, 'W_d':4.5, 'A':0.04, 'b':0.4, 'sigma':130, 't_0': 390, 'alpha':0.2, 'q':4}
 time_range = np.linspace(0,6*args['sigma']*len(gate_list),200)
 qpsi0 = qt.basis(args['q'],0)
