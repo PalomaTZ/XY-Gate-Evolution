@@ -7,16 +7,16 @@ import random
 
 random.seed(0)
 gate_type = ['X', 'Y', 'x', 'y']
-gate_list = ['x']*27#random.choices(gate_type, k=20)
+gate_list = ['x']*9#random.choices(gate_type, k=20)
 print(gate_list)
 
 # I set t_0 to be 3*sigma (three standard deviations)
-args = {'W':4.5, 'W_d':4.5, 'A':0.01571658, 'b':0.4, 'sigma':80, 'alpha':-0.2, 'q':4}
+args = {'W':4.5, 'W_d':4.5, 'A':0.015677, 'b':0.4, 'sigma':80, 'alpha':-0.2, 'q':4}
 #can only change the step count of the time range
-time_range = np.linspace(0,3*args['sigma']+6*args['sigma']*len(gate_list),200)
+time_range = np.linspace(0,6*args['sigma']*len(gate_list),200)
 qpsi0 = qt.basis(args['q'],0)
 
-my_GateEvo = gate_class.GateEvo(time_range, qpsi0, gate_list, args)
+my_GateEvo = old_gate_class.GateEvoTail(time_range, qpsi0, gate_list, args)
 result = my_GateEvo.make_result()
 
 print(result.expect[0][-1])

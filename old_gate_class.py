@@ -6,7 +6,7 @@ options = {"store_final_state":True}
 
 gate_coeff = {'X':[1,1], 'x':[0.5,0.5], 'Y':[-1,1], 'y':[-0.5,0.5]}
 
-class GateEvo:
+class GateEvoTail:
     def __init__(self, time_range, qpsi0, gate_list, args):
         self.args = args
         self.time_range = time_range
@@ -15,7 +15,7 @@ class GateEvo:
         self.A = args['A']
         self.b = args['b']
         self.sigma = args['sigma']
-        self.t_0 = 6*args['sigma']
+        self.t_0 = 3*args['sigma']
         self.alpha = args['alpha']
         self.q = args['q']
         self.gate_list = gate_list
@@ -51,25 +51,22 @@ class GateEvo:
 
     def ey(self, gate):
         return gate_coeff[gate][1]
-    
-    def gauss_wave(self, gate, t_0):
-        return lambda t: self.ex(gate)*0.5*self.A*np.exp(-0.5*((t-t_0)/self.sigma)**2)
-    
-    def gauss_deriv(self, gate, t_0):
-        return lambda t: -self.ey(gate)*0.5*(self.b*self.A/(self.sigma**2))*(t-t_0)*np.exp(-0.5*((t-t_0)/self.sigma)**2)
 
-    def gauss_wave_piece(self, t):
-        #could make these next two variables a part of the class since it is repeated for the next function
-        t0_list = [self.t_0+x*self.t_0 for x in range(len(self.gate_list))]
-        condlist = [(t_0 - 0.5*self.t_0 < t) & (t <= t_0 + 0.5*self.t_0) for t_0 in t0_list]
-        funclist = [self.gauss_wave(gate,t_0) for gate,t_0 in zip(self.gate_list, t0_list)]
-        return np.piecewise(t, condlist=condlist, funclist=funclist)
+    def gauss_wave(self, t):
+        func = 0
+        t_0 = self.t_0
+        for i in self.gate_list:
+            func += self.ex(i)*0.5*self.A*np.exp(-0.5*((t-t_0)/self.sigma)**2)
+            t_0 += 2*self.t_0
+        return func
 
-    def gauss_deriv_piece(self, t):
-        t0_list = [self.t_0+x*self.t_0 for x in range(len(self.gate_list))]
-        condlist = [(t_0 - 0.5*self.t_0 < t) & (t <= t_0 + 0.5*self.t_0) for t_0 in t0_list]
-        funclist = [self.gauss_deriv(gate,t_0) for gate,t_0 in zip(self.gate_list, t0_list)]
-        return np.piecewise(t, condlist=condlist, funclist=funclist)
+    def gauss_deriv(self, t):
+        func = 0
+        t_0 = self.t_0
+        for i in self.gate_list:
+            func += -self.ey(i)*0.5*(self.b*self.A/(self.sigma**2))*(t-t_0)*np.exp(-0.5*((t-t_0)/self.sigma)**2)
+            t_0 += 2*self.t_0
+        return func
 
     def make_collapse_ops(self):
         x = np.sqrt(np.arange(1,self.q))
@@ -86,7 +83,7 @@ class GateEvo:
     def make_result(self):
         X1, Y1 = self.create_off_terms()
         H1 = self.create_diagonal()
-        H = qt.QobjEvo([H1, [X1, self.gauss_wave_piece(self.time_range)], [Y1, self.gauss_deriv_piece(self.time_range)]], tlist=self.time_range)
+        H = qt.QobjEvo([H1, [X1, self.gauss_wave], [Y1, self.gauss_deriv]], args=self.args)
         c_ops = self.make_collapse_ops()
         return qt.mesolve(H, self.qpsi0, self.time_range, c_ops, self.pmatrices, options=options)
 
