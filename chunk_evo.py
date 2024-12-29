@@ -18,7 +18,6 @@ for i in range(10):
     my_GateEvo = gate_class.GateEvo(time_range, qpsi0, args)
     result = my_GateEvo.make_result()
     c_val = [[result.expect[0][-1]], [result.expect[1][-1]], [result.expect[2][-1]], [result.expect[3][-1]]]
-    print(c_val)
     qpsi0 = qt.Qobj(c_val)
 
 fig, ax = plt.subplots()
