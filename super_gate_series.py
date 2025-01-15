@@ -23,10 +23,8 @@ print(result.expect[0][-1])
 
 fig, ax = plt.subplots()
 
-ax.plot(time_range, result.expect[0], label = 'ground state')
-ax.plot(time_range, result.expect[1], label = '1st excited')
-ax.plot(time_range, result.expect[2], label = '2nd excited')
-ax.plot(time_range, result.expect[3], label = '3rd excited')
+for i in range(args['q']):
+    ax.plot(time_range, result.expect[i], label = str(i))
 ax.set_xlabel('Time')
 ax.set_ylabel('Population')
 

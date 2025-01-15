@@ -22,10 +22,7 @@ class GateEvoTail:
         self.kappa = (0.0025**0.5)*args['A']
         self.qpsi0 = qpsi0
         self.num_gates = 10
-        self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
-                        qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
-                        qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
-                        qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()]
+        self.pmatrices = [qt.basis(args['q'],i)*qt.basis(args['q'],i).dag() for i in np.arange(0,args['q'])]
     
     def create_diagonal(self):
         if self.q<2:

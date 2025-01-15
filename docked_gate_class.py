@@ -22,10 +22,11 @@ class GateEvo:
         self.kappa = (0.0025**0.5)*args['A']
         self.qpsi0 = qpsi0
         self.num_gates = 10
-        self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
-                        qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
-                        qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
-                        qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()]
+        self.pmatrices = [qt.basis(args['q'],i)*qt.basis(args['q'],i).dag() for i in np.arange(0,args['q'])]
+        #self.pmatrices = [qt.basis(args['q'],0)*qt.basis(args['q'],0).dag(),
+        #                qt.basis(args['q'],1)*qt.basis(args['q'],1).dag(),
+        #                qt.basis(args['q'],2)*qt.basis(args['q'],2).dag(),
+        #                qt.basis(args['q'],3)*qt.basis(args['q'],3).dag()]
     
     def create_diagonal(self):
         if self.q<2:
@@ -59,7 +60,6 @@ class GateEvo:
         return lambda t: -self.ey(gate)*0.5*(self.b*self.A/(self.sigma**2))*(t-t_0)*np.exp(-0.5*((t-t_0)/self.sigma)**2)
 
     def gauss_wave_piece(self, t):
-        #could make these next two variables a part of the class since it is repeated for the next function
         t0_list = [self.t_0+x*self.t_0 for x in range(len(self.gate_list))]
         condlist = [(t_0 - 0.5*self.t_0 < t) & (t <= t_0 + 0.5*self.t_0) for t_0 in t0_list]
         funclist = [self.gauss_wave(gate,t_0) for gate,t_0 in zip(self.gate_list, t0_list)]
